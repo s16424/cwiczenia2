@@ -59,9 +59,17 @@ namespace WebApplication1.Controllers
                 com.Connection = con;
                 com.CommandText = "select enrollment.idenrollment, semester, name, startdate from enrollment " +
                 "INNER JOIN student ON enrollment.idenrollment = student.idenrollment " +
-                " INNER JOIN studies ON enrollment.idstudy = studies.idstudy where indexnumber ='" + indexNumber + "'; ";
-                con.Open();
+                " INNER JOIN studies ON enrollment.idstudy = studies.idstudy where indexnumber = @index;";
                 var dr = com.ExecuteReader();
+                com.Parameters.AddWithValue("index", indexNumber);
+                con.Open();
+
+                /* 
+                SqlParameter par = new SqlParameter();
+                par.Value = indexNumber;
+                par.ParameterName = "index";
+                com.Parameters.Add(par);
+                */
 
                 if (dr.Read())
                 {   
