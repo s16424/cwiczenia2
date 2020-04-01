@@ -12,13 +12,13 @@ namespace WebApplication1.Controllers
     [Route("api/students")]
     public class StudentsController : ControllerBase
     {
-       // private readonly DAL.IDbService _dbService;
+        // private readonly DAL.IDbService _dbService;
 
-      //  public StudentsController(DAL.IDbService dbService)
-      //  {
-      //      _dbService = dbService;
-     //   }
-    //
+        //  public StudentsController(DAL.IDbService dbService)
+        //  {
+        //      _dbService = dbService;
+        //   }
+        //
         [HttpGet]
 
         public IActionResult GetStudents()
@@ -28,7 +28,7 @@ namespace WebApplication1.Controllers
             using (var com = new SqlCommand())
             { //imie, nazwisko, dataur, nazwa studiow, nr semestru
                 com.Connection = con;
-                com.CommandText = "SELECT student.firstname, student.lastname, student.birthdate, Name, semester " +
+                com.CommandText = "SELECT student.firstname, student.lastname, student.indexnumber, student.birthdate, Name, semester " +
                     "FROM student INNER JOIN enrollment ON student.IdEnrollment = Enrollment.IdEnrollment " +
                     " INNER JOIN studies ON Enrollment.IdStudy = Studies.IdStudy";
                 con.Open();
@@ -37,6 +37,7 @@ namespace WebApplication1.Controllers
                 {
                     var st = new Student();
                     st.FirstName = dr["FirstName"].ToString();
+                    st.IndexNumber = dr["indexNumber"].ToString();
                     st.LastName = dr["LastName"].ToString();
                     st.DataUrodzenia = dr["BirthDate"].ToString();
                     st.NazwaStudiow = dr["name"].ToString();
@@ -46,10 +47,39 @@ namespace WebApplication1.Controllers
                 return Ok(list);
             }
         }
+
+        [HttpGet("{indexNumber}")]
+
+        public IActionResult GetStudents(String indexNumber)
+        {
+            var list = new List<Student>();
+            using (var con = new SqlConnection("Data Source=db-mssql ;Initial Catalog=s16424; Integrated Security = True"))
+            using (var com = new SqlCommand())
+            { //imie, nazwisko, dataur, nazwa studiow, nr semestru
+                com.Connection = con;
+                com.CommandText = "select enrollment.idenrollment, semester, name, startdate from enrollment " +
+                "INNER JOIN student ON enrollment.idenrollment = student.idenrollment " +
+                " INNER JOIN studies ON enrollment.idstudy = studies.idstudy where indexnumber ='" + indexNumber + "'; ";
+                con.Open();
+                var dr = com.ExecuteReader();
+
+                if (dr.Read())
+                {   
+                    var result = "ID wpisu: " + dr["idenrollment"].ToString() +
+                        " , semestr: " + dr["semester"].ToString() + ", na studiach: " + dr["name"].ToString() +
+                        ", data rozpoczecia: " + dr["startdate"].ToString();
+                    return Ok(result);
+                }
+                return NotFound();
+            }
+        }
+
+
+
         //public IActionResult GetStudent(string orderBy)
         //{
-           // return Ok(_dbService.GetStudents());
-       // }
+        // return Ok(_dbService.GetStudents());
+        // }
 
         [HttpPost]
         public IActionResult CreateStudent(Student student)
