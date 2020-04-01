@@ -7,13 +7,19 @@ namespace WebApplication1.Models
 {
     public class Student
     {
-        public int IdStudent { get; set; }
-
+        //public int IdStudent { get; set; }
+       
         public string FirstName { get; set; }
 
         public string LastName { get; set; }
 
         public string IndexNumber { get; set; }
+
+        public string DataUrodzenia { get; set; }
+
+        public int NrSemestru { get; set; }
+        
+        public string NazwaStudiow { get; set; }
 
     }
 }
