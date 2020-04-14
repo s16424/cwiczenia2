@@ -39,9 +39,9 @@ namespace WebApplication1.Controllers
                     st.FirstName = dr["FirstName"].ToString();
                     st.IndexNumber = dr["indexNumber"].ToString();
                     st.LastName = dr["LastName"].ToString();
-                    st.DataUrodzenia = dr["BirthDate"].ToString();
-                    st.NazwaStudiow = dr["name"].ToString();
-                    st.NrSemestru = int.Parse(dr["semester"].ToString());
+                    st.Birthdate = (DateTime)dr["BirthDate"];
+                    st.Studies = dr["name"].ToString();
+                    st.Semester = int.Parse(dr["semester"].ToString());
                     list.Add(st);
                 }
                 return Ok(list);

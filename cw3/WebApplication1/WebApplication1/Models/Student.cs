@@ -15,11 +15,11 @@ namespace WebApplication1.Models
 
         public string IndexNumber { get; set; }
 
-        public string DataUrodzenia { get; set; }
+        public DateTime Birthdate { get; set; }
 
-        public int NrSemestru { get; set; }
+        public int Semester { get; set; }
         
-        public string NazwaStudiow { get; set; }
+        public string Studies { get; set; }
 
     }
 }
