@@ -22,8 +22,7 @@ namespace WebApplication1.Services
 
                 con.Open();
                 var tran = con.BeginTransaction();
-                try
-                {
+ 
                     com.CommandText = "SELECT IdStudies from studies where name = @name";
                     com.Parameters.AddWithValue("name", request.Studies);
 
@@ -59,16 +58,35 @@ namespace WebApplication1.Services
                     com.Parameters.AddWithValue("Bday", request.Birthdate);
                     com.Parameters.AddWithValue("idenr", idenrollment);
                     com.ExecuteNonQuery();
-
                     tran.Commit();
                 }
-                catch (SqlException ex)
+            }
+
+        public Student GetStud(string index)
+        {
+            using (var con = new SqlConnection("Data Source=db-mssql ;Initial Catalog=s16424; Integrated Security = True"))
+            using (var com = new SqlCommand())
+            {
+                com.Connection = con;
+                com.CommandText = "select * from student where indexnumber = @index;";
+                com.Parameters.AddWithValue("index", index);
+                     con.Open();
+                    var dr = com.ExecuteReader();
+                if (!dr.Read())
                 {
-                    tran.Rollback();
+                    return null;
                 }
+                else{ 
+                    var res = new Student();
+                    res.IndexNumber = dr["IndexNumber"].ToString();
+                    //res.FirstName = dr["FirstName"].ToString();
+                    //res.LastName = dr["LastName"].ToString();
+                   // res.Birthdate = (DateTime)dr["Birthdate"];
+
+                    return res; 
+                } 
             }
         }
-
         public void PromoteStudents(int semester, string studies)
         {
             throw new NotImplementedException();

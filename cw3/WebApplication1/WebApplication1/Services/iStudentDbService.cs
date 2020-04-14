@@ -11,5 +11,6 @@ namespace WebApplication1.Services
         void EnrollStudent(EnrollStudentRequest request);
         void PromoteStudents(int semester, string studies);
 
+        Student GetStud(string index);
     }
 }

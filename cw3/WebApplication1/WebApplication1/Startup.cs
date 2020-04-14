@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
@@ -28,11 +30,12 @@ namespace WebApplication1
         {
             //  services.AddSingleton<DAL.IDbService, DAL.MockDbService>();
             services.AddTransient<iStudentDbService, SqlServerStudentDbService>();
+            services.AddScoped<iStudentDbService, SqlServerStudentDbService>();
             services.AddControllers();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, iStudentDbService service)
         {
             if (env.IsDevelopment())
             {
@@ -41,11 +44,33 @@ namespace WebApplication1
 
             app.UseHttpsRedirection();
 
-            app.UseRouting();
+
+            // - Index : sxxxx + spr w DB czy istnieje
+            app.Use(async (context, next) =>
+            {
+                if (!context.Request.Headers.ContainsKey("Index"))
+                {
+                    context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                    await context.Response.WriteAsync("Musisz podac numer indeksu");
+                    return;
+                }
+                string index = context.Request.Headers["Index"].ToString();
+                var stud = service.GetStud(index);
+                if(stud == null)
+                {
+                    context.Response.StatusCode = StatusCodes.Status404NotFound;
+                    await context.Response.WriteAsync("Student not found");
+                    return;
+                }
+        
+                await next();
+            });
+
+            app.UseRouting(); // -- sprawddza co powinno odp na zadanie
 
             app.UseAuthorization();
 
-            app.UseEndpoints(endpoints =>
+            app.UseEndpoints(endpoints => // zwraca odp na zadanie
             {
                 endpoints.MapControllers();
             });
