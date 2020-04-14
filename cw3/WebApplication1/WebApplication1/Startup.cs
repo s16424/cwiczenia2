@@ -12,6 +12,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using WebApplication1.Middleware;
 using WebApplication1.Services;
 
 namespace WebApplication1
@@ -44,7 +45,7 @@ namespace WebApplication1
 
             app.UseHttpsRedirection();
 
-
+            app.UseMiddleware<LoggingMiddleware>();
             // - Index : sxxxx + spr w DB czy istnieje
             app.Use(async (context, next) =>
             {
