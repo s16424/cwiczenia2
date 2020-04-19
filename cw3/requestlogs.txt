@@ -1,4 +1,7 @@
 /api/students
-GET
+POST
 
-aaasdasdadaaaaa
+{
+	"Login" : "s2345",
+	"Haslo" : "jurek@323wd"
+}

@@ -5,6 +5,14 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using System.Data.SqlClient;
 using WebApplication1.Models;
+using Microsoft.AspNetCore.Authorization;
+using WebApplication1.DTOs;
+using System.Security.Claims;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using Microsoft.Extensions.Configuration;
+using System.IdentityModel.Tokens.Jwt;
+using Microsoft.AspNetCore.Authorization.Infrastructure;
 
 namespace WebApplication1.Controllers
 {
@@ -18,9 +26,15 @@ namespace WebApplication1.Controllers
         //  {
         //      _dbService = dbService;
         //   }
-        //
-        [HttpGet]
+        public IConfiguration Configuration { get; set; }
+        public StudentsController(IConfiguration configuration)
+        {
+            Configuration = configuration;
+        }
 
+        [HttpGet]
+        [Authorize]
+        //[Authorize(Roles = "admin")]
         public IActionResult GetStudents()
         {
             var list = new List<Student>();
@@ -47,6 +61,62 @@ namespace WebApplication1.Controllers
                 return Ok(list);
             }
         }
+
+        [HttpPost]
+        public IActionResult Login(LoginRequestDto request)
+        {
+         
+            var pass = request.Haslo;
+            var passDB = "";
+            //////////////////////////////
+            using (var con = new SqlConnection("Data Source=db-mssql ;Initial Catalog=s16424; Integrated Security = True"))
+            using (var com = new SqlCommand())
+            { 
+                com.Connection = con;
+                com.CommandText = "SELECT Passw from student where IndexNumber = @user";
+                com.Parameters.AddWithValue("user", request.Login);
+                con.Open();
+                var dr = com.ExecuteReader();
+                while (dr.Read())
+                {
+                    passDB = dr["password"].ToString();
+                }
+            }
+            if (!pass.Equals(passDB))
+            {
+                return BadRequest("Incorrect password");
+            }
+
+            /////////////////////////
+
+
+            var claims = new[] 
+{
+                new Claim(ClaimTypes.NameIdentifier, "1"),
+                new Claim(ClaimTypes.Name, request.Login),
+                new Claim(ClaimTypes.Role, "admin"),
+                new Claim(ClaimTypes.Role, "student")
+            };
+
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["SecretKey"]));
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+            var token = new JwtSecurityToken
+                (
+                issuer: "Gakko",
+                audience: "Students",
+                claims: claims,
+                expires : DateTime.Now.AddMinutes(10),
+                signingCredentials: creds
+                ) ;
+
+            return Ok(new
+            {
+                token = new JwtSecurityTokenHandler().WriteToken(token),
+                refreshToken = Guid.NewGuid()
+            });
+        }
+
 
         [HttpGet("{indexNumber}")]
 
@@ -89,12 +159,12 @@ namespace WebApplication1.Controllers
         // return Ok(_dbService.GetStudents());
         // }
 
-        [HttpPost]
-        public IActionResult CreateStudent(Student student)
-        {
-            student.IndexNumber = $"s{new Random().Next(1, 20000)}";
-            return Ok(student);
-        }
+       // [HttpPost]
+     //   public IActionResult CreateStudent(Student student)
+      //  {
+       //     student.IndexNumber = $"s{new Random().Next(1, 20000)}";
+      //      return Ok(student);
+     //   }
 
         // [HttpGet]
         // public string GetStudents(string  orderBy)

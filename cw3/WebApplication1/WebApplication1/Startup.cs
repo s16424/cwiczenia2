@@ -2,7 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -12,8 +15,10 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using WebApplication1.Handlers;
 using WebApplication1.Middleware;
 using WebApplication1.Services;
+using Microsoft.IdentityModel.Tokens;
 
 namespace WebApplication1
 {
@@ -30,6 +35,21 @@ namespace WebApplication1
         public void ConfigureServices(IServiceCollection services)
         {
             //  services.AddSingleton<DAL.IDbService, DAL.MockDbService>();
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters =
+                new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidIssuer = "Gakko",
+                    ValidAudience = "Students",
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["SecretKey"]))
+                };
+            });
+            //services.AddAuthentication("BasicAuthentication").AddScheme<AuthenticationSchemeOptions,
+            //    BasicAuthHandler>("BasicAuthentication", null);
             services.AddTransient<iStudentDbService, SqlServerStudentDbService>();
             services.AddScoped<iStudentDbService, SqlServerStudentDbService>();
             services.AddControllers();
@@ -68,7 +88,7 @@ namespace WebApplication1
             });
 
             app.UseRouting(); // -- sprawddza co powinno odp na zadanie
-
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints => // zwraca odp na zadanie
